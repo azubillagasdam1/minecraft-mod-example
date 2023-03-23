@@ -28,7 +28,55 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
     @Override
     public String autor() {
-        return "Javier Jorge Soteras";
+        return "Aitor Zubillaga Soria";
+    }
+
+    /* Devuelve 1 o -1  dependiendo de la direccion que te muevas*/
+
+    /*@SubscribeEvent
+    public void vectores(MovementInputUpdateEvent movement) {
+            if(movement.getInput().getMoveVector().x==1.0){
+                System.out.println("Vector X = "+(int)movement.getInput().getMoveVector().x);
+            }
+        if(movement.getInput().getMoveVector().x==-1.0){
+            System.out.println("Vector X = "+(int)movement.getInput().getMoveVector().x);
+        }
+        if(movement.getInput().getMoveVector().y==1.0){
+            System.out.println("Vector Y = "+(int)movement.getInput().getMoveVector().y);
+        }
+        if(movement.getInput().getMoveVector().y==-1.0){
+            System.out.println("Vector Y = "+(int)movement.getInput().getMoveVector().y);
+        }
+        //System.out.println("Vector en tiempo real: "+movement.getInput().getMoveVector().x +" "+ movement.getInput().getMoveVector().y);
+    }*/
+
+    /*Devuelve las cordenadas en directo de el bloque */
+    @SubscribeEvent
+    public void printCordenadasJugador(MovementInputUpdateEvent movement) {
+        System.out.print("X: "+(int)movement.getEntity().xOld+"\t");
+        System.out.print("Y: "+(int)movement.getEntity().yOld+"\t");
+        System.out.print("Z: "+(int)movement.getEntity().zOld+"\t");
+        System.out.println("");
+    }
+
+    @SubscribeEvent
+    public void printCordenadasBolqueDebajo(MovementInputUpdateEvent movement) {
+        System.out.print("X: "+(int)movement.getEntity().xOld+"\t");
+        System.out.print("Y: "+(int)(movement.getEntity().yOld-1)+"\t");
+        System.out.print("Z: "+(int)movement.getEntity().zOld+"\t");
+        System.out.println("");
+    }
+
+    @SubscribeEvent
+    public BlockPos getBloqueDeAbajo(MovementInputUpdateEvent movement) {
+        BlockPos posicion = new BlockPos(movement.getEntity().xOld,(movement.getEntity().yOld-1),movement.getEntity().zOld);
+        return posicion;
+    }
+
+
+    public void reemplazarBloque(MovementInputUpdateEvent movement) {
+        BlockPos cordenadas = getBloqueDeAbajo(movement);
+        //Block.updateOrDestroy();
     }
 
     @Override
