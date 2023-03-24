@@ -77,6 +77,8 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     public void reemplazarBloque(MovementInputUpdateEvent movement) {
         BlockPos cordenadas = getBloqueDeAbajo(movement);
         //Block.updateOrDestroy();
+        //Minecraft.getInstance().setBlock(cord, bloque, 512) o algo asi.
+        //event.getLevel().setBlock(cord, bloque, 512) o algo asi.
     }
 
     @Override
