@@ -1,9 +1,16 @@
 package es.mariaanasanz.ut7.mods.impl;
 
 import es.mariaanasanz.ut7.mods.base.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
@@ -11,9 +18,12 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.ItemFishedEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -21,6 +31,9 @@ import net.minecraftforge.fml.common.Mod;
 public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStartEvent,
         IItemPickupEvent, ILivingDamageEvent, IUseItemEvent, IFishedEvent,
         IInteractEvent, IMovementEvent {
+
+
+    private boolean yaLlamado = false;//usada para controlar los bucles infinitos que se crean al llamar a "MovementInputUpdateEvent movement"
 
     public ExampleMod(){
         super();
@@ -67,19 +80,57 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         System.out.println("");
     }
 
+
+    /*Devuelve el BlockPos de el bloque de abajo del jugador*/
     @SubscribeEvent
     public BlockPos getBloqueDeAbajo(MovementInputUpdateEvent movement) {
         BlockPos posicion = new BlockPos(movement.getEntity().xOld,(movement.getEntity().yOld-1),movement.getEntity().zOld);
         return posicion;
     }
 
-
+    /**/
+    @SubscribeEvent
     public void reemplazarBloque(MovementInputUpdateEvent movement) {
-        BlockPos cordenadas = getBloqueDeAbajo(movement);
-        //Block.updateOrDestroy();
-        //Minecraft.getInstance().setBlock(cord, bloque, 512) o algo asi.
-        //event.getLevel().setBlock(cord, bloque, 512) o algo asi.
+        yaLlamado = false;
+        selectorDeBotas(movement);
+        System.out.println("Se ejecutó el método reemplazarBloque");
     }
+
+
+    /*Comprueba si el jugador lleva botas, y que tipo de botas para llamar a sus respectivos metodos*/
+    @SubscribeEvent
+    public void selectorDeBotas(MovementInputUpdateEvent movement) {
+        System.out.println("Se ejecuto:botasQueColocanBlock0");
+        int blockId = 1;
+        if (!yaLlamado) {
+            colocarBloque(blockId, movement);
+            yaLlamado = true;
+        }
+    }
+    /*@SubscribeEvent
+    public void pruebas() {
+        System.out.println("Se ejecuto:botasQueColocanBlock0");
+        Player.getEquipmentSlotForItem(ItemStack.of(ItemStack.))
+    }*/
+
+    /*Coloca un bloque que recibe como parametro*/
+    public void colocarBloque(int blockId, MovementInputUpdateEvent movement) {
+        System.out.println("Se ejecuto:colocarBloque");
+        BlockPos coordenadas = getBloqueDeAbajo(movement);
+        movement.getEntity().getLevel().setBlock(coordenadas, Block.stateById(blockId), 512);
+        Minecraft.getInstance().level.setBlock(coordenadas, Block.stateById(blockId), 512);
+    }
+
+      /* @SubscribeEvent
+    public void botasQueColocanBlock0(MovementInputUpdateEvent movement) {
+        if (!yaLlamado) {
+            yaLlamado = true;
+            BlockPos coordenadas = getBloqueDeAbajo(movement);
+            movement.getEntity().getLevel().setBlock(coordenadas, Block.stateById(1), 512);
+            Minecraft.getInstance().level.setBlock(coordenadas, Block.stateById(2), 512);
+        }
+    }*/
+
 
     @Override
     @SubscribeEvent
