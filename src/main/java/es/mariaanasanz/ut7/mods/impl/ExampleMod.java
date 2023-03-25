@@ -152,7 +152,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         if (botas.getItem().equals( Items.LEATHER_BOOTS)) {
             //System.out.println("LEATHER_BOOTS");
             botasCuero();
-            colocarBloque(1);
+
 
         }else{
             System.out.println("NO LLEVAS NADA");
@@ -167,14 +167,13 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     public void botasCuero() {
         if(cambioDeBloque()){
             if (Math.random() < 0.5) {
-                colocarBloque(1);
+                colocarBloqueServer(122);
                 System.out.println("ID:1");
-            }else{colocarBloque(52);
-                System.out.println("ID:2");
-
+            }else{
+                System.out.println("Nada");
             }
         }else{
-            System.out.println("No se esta ejecutando BotasCuero()");
+            //System.out.println("No se esta ejecutando BotasCuero()");
         }
 
 
@@ -221,13 +220,14 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     }*/
 
 
-    public void colocarBloque(int blockId) {
+    public void colocarBloqueServer(int blockId) {
         // System.out.println("Se ejecuto:colocarBloque");
         BlockPos coordenadas = posicionBloqueDebajo;
         Minecraft.getInstance().level.setBlock(coordenadas, Block.stateById(blockId), 512);
-        // movement.getEntity().getLevel().setBlock(coordenadas, Block.stateById(30), 512);
         //movement.getEntity().getLevel().setBlock(coordenadas, Block.stateById(blockId), 512);
     }
+
+
 
 
 
