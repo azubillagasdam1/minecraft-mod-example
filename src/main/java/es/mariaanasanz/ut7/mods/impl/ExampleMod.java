@@ -187,7 +187,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 /*Aqui Ocurre el evento de las botas de hierro*/
     private void botasHierro() {
         if(cambioDeBloque()){
-            if (Math.random() < 0.1) {
+            if (Math.random() < 0.10) {
                 generarExplosion();
                 System.out.println("Explosion");
             }else{
