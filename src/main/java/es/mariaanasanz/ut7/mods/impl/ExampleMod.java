@@ -208,7 +208,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
                 System.out.println("right"+event.getInput().right);
             }
             if(event.getInput().left){
-                System.out.println("left"+event.getInput().left);
+                System.out.println("left "+event.getInput().left);
             }
         }
     }
