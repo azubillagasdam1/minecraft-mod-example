@@ -167,7 +167,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
 
 
-
+    /*Aqui Ocurre el evento de las botas de cuero*/
     public void botasCuero() {
 
         if(cambioDeBloque()){
@@ -184,7 +184,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
 
 
-
+/*Aqui Ocurre el evento de las botas de hierro*/
     private void botasHierro() {
         if(cambioDeBloque()){
             if (Math.random() < 0.1) {
