@@ -47,8 +47,11 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     //   private boolean yaLlamado = false;//usada para controlar los bucles infinitos que se crean al llamar a "MovementInputUpdateEvent movement"
     private BlockPos posicionJugador;
     private BlockPos posicionBloqueDebajo;
-    double PosXAnterior = Integer.MAX_VALUE;
-    double PosZAnterior = Integer.MAX_VALUE;
+    double PosXAnteriorJugador = Double.MAX_VALUE;
+    double PosZAnteriorJugador = Double.MAX_VALUE;
+    double PosXAnteriorBloque = Double.MAX_VALUE;
+    double PosZAnteriorBloque = Double.MAX_VALUE;
+    private   int contador = 0;
 
     public ExampleMod(){
         super();
@@ -165,47 +168,73 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
 
     public void botasCuero() {
+
         if(cambioDeBloque()){
             if (Math.random() < 0.5) {
-                colocarBloqueServer(122);
-                System.out.println("ID:1");
+                colocarBloqueServer(1696);
+                System.out.println("Fuego Invocado");
             }else{
-                System.out.println("Nada");
+               System.out.println("Nada");
             }
-        }else{
-            //System.out.println("No se esta ejecutando BotasCuero()");
         }
-
-
-
-
-
     }
 
     /*Este metodo si lo llamas, comprueba desde la ultima vez que lo has llamado y devueve true si has cambiado de bloque*/
 
 
     public boolean cambioDeBloque(){
-        if(((int)posicionJugador.getX())!=((int)PosXAnterior)&&PosXAnterior!=Integer.MAX_VALUE){
+        if(((int)posicionJugador.getX())!=((int)PosXAnteriorJugador)&&PosXAnteriorJugador!=Double.MAX_VALUE){
             System.out.println("Has cambiado de bloque X");
-            this.PosXAnterior = posicionJugador.getX();
-            this.PosZAnterior = posicionJugador.getZ();
+            this.PosXAnteriorJugador = posicionJugador.getX();
+            this.PosZAnteriorJugador = posicionJugador.getZ();
 
             return true;
-        } else if (((int)posicionJugador.getZ())!=((int)PosZAnterior)&&PosZAnterior!=Integer.MAX_VALUE){
+        } else if (((int)posicionJugador.getZ())!=((int)PosZAnteriorJugador)&&PosZAnteriorJugador!=Double.MAX_VALUE){
             System.out.println("Has cambiado de bloque Z");
-            this.PosXAnterior = posicionJugador.getX();
-            this.PosZAnterior = posicionJugador.getZ();
+            this.PosXAnteriorJugador = posicionJugador.getX();
+            this.PosZAnteriorJugador = posicionJugador.getZ();
 
             return true;
         }else{
-            this.PosXAnterior = posicionJugador.getX();
-            this.PosZAnterior = posicionJugador.getZ();
+            this.PosXAnteriorJugador = posicionJugador.getX();
+            this.PosZAnteriorJugador = posicionJugador.getZ();
 
         }
 
         return false;
     }
+
+    public int direccionBloqueAnteriorBloque(){
+      return 0;
+    }
+
+   /* public int direccionPosicionAnteriorJugador(){
+        if(cambioDeBloque()){
+             if((int)PosXAnteriorJugador - (int)(posicionJugador.getX())<0){
+            System.out.println("Anterior-actualX<0 ID:1");
+            return 1;
+           }
+            if((int)PosXAnteriorJugador - (int)(posicionJugador.getX())>0){
+                System.out.println("Anterior-actualX>0 ID:2");
+                return 2;
+            }
+            if((int)PosZAnteriorJugador - (int)(posicionJugador.getZ())<0){
+                System.out.println("Anterior-actualZ>0 ID:3");
+                return 3;
+            }
+            if((int)PosZAnteriorJugador - (int)(posicionJugador.getZ())>0){
+                System.out.println("Anterior-actualZ>0 ID:4");
+                return 4;
+            }
+
+
+            }else{
+            System.out.println("Anterior-actualZ==0 ID:0");
+
+        }
+        return 0;
+
+    }*/
 
 
 
