@@ -4,10 +4,12 @@ import es.mariaanasanz.ut7.mods.base.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -32,7 +34,9 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         IItemPickupEvent, ILivingDamageEvent, IUseItemEvent, IFishedEvent,
         IInteractEvent, IMovementEvent {
 
-
+    private BlockPos posicionJugador;
+    double PosXAnterior = Integer.MAX_VALUE;
+    double PosYAnterior = Integer.MAX_VALUE;
     private boolean yaLlamado = false;//usada para controlar los bucles infinitos que se crean al llamar a "MovementInputUpdateEvent movement"
 
     public ExampleMod(){
@@ -100,12 +104,41 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     /*Comprueba si el jugador lleva botas, y que tipo de botas para llamar a sus respectivos metodos*/
     @SubscribeEvent
     public void selectorDeBotas(MovementInputUpdateEvent movement) {
-        System.out.println("Se ejecuto:botasQueColocanBlock0");
+
+        ItemStack botas = Minecraft.getInstance().player.getItemBySlot(EquipmentSlot.FEET);
+
+        if (botas.getItem().equals( Items.DIAMOND_BOOTS)) {
+            System.out.println("DIAMOND_BOOTS");
+        }
+        if (botas.getItem().equals( Items.GOLDEN_BOOTS)) {
+            System.out.println("GOLDEN_BOOTS");
+        }
+        if (botas.getItem().equals( Items.IRON_BOOTS)) {
+            System.out.println("IRON_BOOTS");
+        }
+        if (botas.getItem().equals( Items.LEATHER_BOOTS)) {
+            //System.out.println("LEATHER_BOOTS");
+            botasCuero();
+        }else{
+            System.out.println("NO LLEVAS NADA");
+        }
         int blockId = 1;
         if (!yaLlamado) {
             colocarBloque(blockId, movement);
             yaLlamado = true;
         }
+    }
+
+    private void botasCuero() {
+
+        if((int)posicionJugador.getX()!=(int)PosXAnterior&&PosXAnterior!=Integer.MAX_VALUE){
+            System.out.println("Has cambiado de bloque");
+        } else if ((int)posicionJugador.getY()!=(int)PosYAnterior&&PosYAnterior!=Integer.MAX_VALUE){
+            System.out.println("Has cambiado de bloque");}else{
+            PosXAnterior = posicionJugador.getX();
+            PosYAnterior = posicionJugador.getY();
+        }
+
     }
     /*@SubscribeEvent
     public void pruebas() {
