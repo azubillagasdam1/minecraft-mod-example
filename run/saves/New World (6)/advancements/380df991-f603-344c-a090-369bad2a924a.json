@@ -1,0 +1,28 @@
+{
+  "minecraft:husbandry/obtain_netherite_hoe": {
+    "criteria": {
+      "netherite_hoe": "2023-03-26 00:08:55 +0100"
+    },
+    "done": true
+  },
+  "minecraft:story/shiny_gear": {
+    "criteria": {
+      "diamond_boots": "2023-03-26 00:08:22 +0100"
+    },
+    "done": true
+  },
+  "minecraft:husbandry/plant_seed": {
+    "criteria": {
+      "wheat": "2023-03-26 00:08:58 +0100"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "minecraft:beach": "2023-03-26 00:08:14 +0100",
+      "minecraft:forest": "2023-03-26 00:08:02 +0100"
+    },
+    "done": false
+  },
+  "DataVersion": 3120
+}
