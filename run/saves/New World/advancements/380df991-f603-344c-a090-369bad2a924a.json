@@ -1,0 +1,28 @@
+{
+  "minecraft:story/obtain_armor": {
+    "criteria": {
+      "iron_boots": "2023-03-25 20:40:28 +0100"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/iron_nugget_from_blasting": {
+    "criteria": {
+      "has_iron_boots": "2023-03-25 20:40:28 +0100"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/iron_nugget_from_smelting": {
+    "criteria": {
+      "has_iron_boots": "2023-03-25 20:40:28 +0100"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "minecraft:beach": "2023-03-25 20:40:20 +0100",
+      "minecraft:swamp": "2023-03-25 20:40:47 +0100"
+    },
+    "done": false
+  },
+  "DataVersion": 3120
+}

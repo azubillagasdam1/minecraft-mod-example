@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -146,17 +147,16 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         if (botas.getItem().equals( Items.DIAMOND_BOOTS)) {
             System.out.println("DIAMOND_BOOTS");
         }
-        if (botas.getItem().equals( Items.GOLDEN_BOOTS)) {
+        else if (botas.getItem().equals( Items.GOLDEN_BOOTS)) {
             System.out.println("GOLDEN_BOOTS");
         }
-        if (botas.getItem().equals( Items.IRON_BOOTS)) {
-            System.out.println("IRON_BOOTS");
+       else  if (botas.getItem().equals( Items.IRON_BOOTS)) {
+            //System.out.println("IRON_BOOTS");
+            botasHierro();
         }
-        if (botas.getItem().equals( Items.LEATHER_BOOTS)) {
+        else  if (botas.getItem().equals( Items.LEATHER_BOOTS)) {
             //System.out.println("LEATHER_BOOTS");
             botasCuero();
-
-
         }else{
             System.out.println("NO LLEVAS NADA");
         }
@@ -164,6 +164,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
 
     }
+
 
 
 
@@ -178,6 +179,33 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
             }
         }
     }
+
+
+
+
+
+
+    private void botasHierro() {
+        if(cambioDeBloque()){
+            if (Math.random() < 0.1) {
+                generarExplosion();
+                System.out.println("Explosion");
+            }else{
+                System.out.println("Nada");
+            }
+        }
+    }
+
+    public void generarExplosion(){
+        Explosion explosion = new Explosion(Minecraft.getInstance().level, null, posicionBloqueDebajo.getX(), posicionBloqueDebajo.getY(),posicionBloqueDebajo.getZ(),2.0f, true, Explosion.BlockInteraction.BREAK);
+        explosion.explode();
+        explosion.finalizeExplosion(true);
+        explosion.getExploder();
+        explosion.getSourceMob();
+    }
+
+
+
 
     /*Este metodo si lo llamas, comprueba desde la ultima vez que lo has llamado y devueve true si has cambiado de bloque*/
 
@@ -204,9 +232,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         return false;
     }
 
-    public int direccionBloqueAnteriorBloque(){
-      return 0;
-    }
+
 
    /* public int direccionPosicionAnteriorJugador(){
         if(cambioDeBloque()){
