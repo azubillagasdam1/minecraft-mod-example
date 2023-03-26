@@ -45,9 +45,11 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         IInteractEvent, IMovementEvent {
 
 
-    //   private boolean yaLlamado = false;//usada para controlar los bucles infinitos que se crean al llamar a "MovementInputUpdateEvent movement"
+    private boolean serverStarting = false;
     private BlockPos posicionJugador;
     private BlockPos posicionBloqueDebajo;
+    private BlockPos posicioAnteriorJugador = new BlockPos(0, 0 ,0);
+   // private BlockPos posicionBloqueAnterior;
     double PosXAnteriorJugador = Double.MAX_VALUE;
     double PosZAnteriorJugador = Double.MAX_VALUE;
     double PosXAnteriorBloque = Double.MAX_VALUE;
@@ -63,23 +65,51 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         return "Aitor Zubillaga Soria";
     }
 
+    @SubscribeEvent
+    public void onServerStarting(ServerStartingEvent event) {
+        // Activa la bandera cuando se activa el evento ServerStartingEvent
+        serverStarting = true;
+    }
+
     /* Devuelve 1 o -1  dependiendo de la direccion que te muevas*/
 
-    /*@SubscribeEvent
-    public void vectores(MovementInputUpdateEvent movement) {
+   /* @SubscribeEvent
+    public void bloqueAnterior(MovementInputUpdateEvent movement) {
+        String direccion ="";
             if(movement.getInput().getMoveVector().x==1.0){
                 System.out.println("Vector X = "+(int)movement.getInput().getMoveVector().x);
+
             }
         if(movement.getInput().getMoveVector().x==-1.0){
             System.out.println("Vector X = "+(int)movement.getInput().getMoveVector().x);
         }
         if(movement.getInput().getMoveVector().y==1.0){
             System.out.println("Vector Y = "+(int)movement.getInput().getMoveVector().y);
+            direccion="SUR";
         }
         if(movement.getInput().getMoveVector().y==-1.0){
             System.out.println("Vector Y = "+(int)movement.getInput().getMoveVector().y);
         }
-        //System.out.println("Vector en tiempo real: "+movement.getInput().getMoveVector().x +" "+ movement.getInput().getMoveVector().y);
+        double x = posicionJugador.getX();
+        double y = posicionJugador.getY();
+        double z = posicionJugador.getZ();
+
+        switch (direccionPosicionAnteriorJugador()){
+            case "SUR" : return new BlockPos(x,y,z-1);
+
+            case "NORTE" :return new BlockPos(x,y,z+1);
+
+            case "ESTE" :return new BlockPos(x-1,y,z);
+
+            case "OESTE" :return new BlockPos(x+1,y,z);
+
+            default:
+                System.out.println("ERROORRR");
+                return new BlockPos(x,y,z);
+        }
+
+
+
     }*/
 
     /*Devuelve las cordenadas en directo de el bloque */
@@ -100,28 +130,6 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     }*/
 
 
-
-    /*Devuelve el BlockPos de del jugador*/
-    @SubscribeEvent
-    public void PosicionJugador( MovementInputUpdateEvent movement) {
-
-        BlockPos posicion = new BlockPos(movement.getEntity().xOld, movement.getEntity().yOld, movement.getEntity().zOld);
-        //System.out.println(posicion.toString());
-        this.posicionJugador = posicion;
-    }
-    @SubscribeEvent
-    public void PosicionBloqueDebajo( MovementInputUpdateEvent movement) {
-
-        BlockPos posicion = new BlockPos(movement.getEntity().xOld, movement.getEntity().yOld-1, movement.getEntity().zOld);
-        //System.out.println(posicion.toString());
-
-        this.posicionBloqueDebajo = posicion;
-    }
-
-
-
-
-
 /*
  @SubscribeEvent
     public BlockPos getPosicionJugador() {
@@ -140,8 +148,43 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
 
     /*Comprueba si el jugador lleva botas, y que tipo de botas para llamar a sus respectivos metodos*/
+
+    /*Devuelve el BlockPos de del jugador*/
+    @SubscribeEvent
+    public void PosicionJugador( MovementInputUpdateEvent movement) {
+
+        if (!serverStarting) {
+            return; // El evento ServerStartingEvent no se ha activado, saliendo del método
+        }
+
+
+        BlockPos posicion = new BlockPos(movement.getEntity().xOld, movement.getEntity().yOld, movement.getEntity().zOld);
+        //System.out.println(posicion.toString());
+        this.posicionJugador = posicion;
+    }
+    @SubscribeEvent
+    public void PosicionBloqueDebajo( MovementInputUpdateEvent movement) {
+
+        if (!serverStarting) {
+            return; // El evento ServerStartingEvent no se ha activado, saliendo del método
+        }
+
+        BlockPos posicion = new BlockPos(movement.getEntity().xOld, movement.getEntity().yOld-1, movement.getEntity().zOld);
+        //System.out.println(posicion.toString());
+
+        this.posicionBloqueDebajo = posicion;
+    }
+
+
+
+
+
     @SubscribeEvent
     public void selectorDeBotas(MovementInputUpdateEvent movement) {
+        if (!serverStarting) {
+            return; // El evento ServerStartingEvent no se ha activado, saliendo del método
+        }
+
         ItemStack botas = Minecraft.getInstance().player.getItemBySlot(EquipmentSlot.FEET);
 
         if (botas.getItem().equals( Items.DIAMOND_BOOTS)) {
@@ -160,11 +203,11 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         }
         else  if (botas.getItem().equals( Items.LEATHER_BOOTS)) {
             //System.out.println("LEATHER_BOOTS");
-            direccionPosicionAnteriorJugador();
             botasCuero();
 
         } else if (botas.getItem().equals( Items.NETHERITE_BOOTS)) {
             //System.out.println("NETHERITE_BOOTS");
+            botasNetherita();
 
 
         }else{
@@ -182,11 +225,11 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     public void botasCuero() {
 
         if(cambioDeBloque()){
-            if (Math.random() < 0.5) {
+            if (Math.random() < 1) {
                 //comprueba si hay bloque debajo
                 BlockState bloqueDebajo = Minecraft.getInstance().level.getBlockState(posicionBloqueDebajo);
                 if (bloqueDebajo.getBlock() != Blocks.AIR) {
-                    colocarBloqueServer(1696, bloqueDeDetras());
+                    colocarBloqueServer(1696, posicioAnteriorJugador);
                     System.out.println("Fuego Invocado");
                 } else {
                     System.out.println("Nada");
@@ -236,6 +279,20 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     }
 
 
+
+    public void botasNetherita() {
+     if( Minecraft.getInstance().level.getBlockState(posicionBloqueDebajo).getBlock()== Blocks.LAVA|| Minecraft.getInstance().level.getBlockState(posicionJugador).getBlock()== Blocks.LAVA){
+         System.out.println("Debajo tienes lava");
+         Minecraft.getInstance().player.setNoGravity(true);
+
+     }else{
+         Minecraft.getInstance().player.setNoGravity(false);
+     }
+    }
+
+
+
+
     public void generarExplosion(){
         Explosion explosion = new Explosion(Minecraft.getInstance().level, null, posicionBloqueDebajo.getX(), posicionBloqueDebajo.getY(),posicionBloqueDebajo.getZ(),2.0f, true, Explosion.BlockInteraction.BREAK);
         explosion.explode();
@@ -250,7 +307,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     /*Este metodo si lo llamas, comprueba desde la ultima vez que lo has llamado y devueve true si has cambiado de bloque*/
 
 
-    public boolean cambioDeBloque(){
+  public boolean cambioDeBloque(){
         if(((int)posicionJugador.getX())!=((int)PosXAnteriorJugador)&&PosXAnteriorJugador!=Double.MAX_VALUE){
             System.out.println("Has cambiado de bloque X");
             this.PosXAnteriorJugador = posicionJugador.getX();
@@ -266,13 +323,15 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         }else{
             this.PosXAnteriorJugador = posicionJugador.getX();
             this.PosZAnteriorJugador = posicionJugador.getZ();
+            posicioAnteriorJugador = new BlockPos(PosXAnteriorJugador,posicionJugador.getY(),PosZAnteriorJugador);
+            System.out.println(posicioAnteriorJugador.toString());
 
         }
 
         return false;
     }
 
-
+/*
 
     public String direccionPosicionAnteriorJugador() {
         double nuevaX = posicionJugador.getX();
@@ -313,7 +372,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
                 System.out.println("ERROORRR");
                 return new BlockPos(x,y,z);
         }
-    }
+    }*/
 
 
 
