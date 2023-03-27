@@ -1,12 +1,20 @@
 package es.mariaanasanz.ut7.mods.impl;
 
+import ca.weblite.objc.Client;
 import es.mariaanasanz.ut7.mods.base.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,6 +28,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -37,14 +46,18 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fluids.FluidActionResult;
 import net.minecraftforge.fml.common.Mod;
+
+import java.io.IOException;
+import java.util.logging.XMLFormatter;
 
 @Mod(DamMod.MOD_ID)
 public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStartEvent,
         IItemPickupEvent, ILivingDamageEvent, IUseItemEvent, IFishedEvent,
         IInteractEvent, IMovementEvent {
-
-
+    private Player jugador;
+    private Level mundo;
     private boolean serverStarting = false;
     private BlockPos posicionJugador;
     private BlockPos posicionBloqueDebajo;
@@ -54,6 +67,8 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     double PosZAnteriorJugador = Double.MAX_VALUE;
     double PosXAnteriorBloque = Double.MAX_VALUE;
     double PosZAnteriorBloque = Double.MAX_VALUE;
+
+    private Boolean teletransportado = false;
     private   int contador = 1650;
 
     public ExampleMod(){
@@ -70,6 +85,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         // Activa la bandera cuando se activa el evento ServerStartingEvent
         serverStarting = true;
     }
+
 
     /* Devuelve 1 o -1  dependiendo de la direccion que te muevas*/
 
@@ -150,30 +166,45 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     /*Comprueba si el jugador lleva botas, y que tipo de botas para llamar a sus respectivos metodos*/
 
     /*Devuelve el BlockPos de del jugador*/
+
+
     @SubscribeEvent
-    public void PosicionJugador( MovementInputUpdateEvent movement) {
+    public void ActualizadorPosiciones( MovementInputUpdateEvent movement) {
 
         if (!serverStarting) {
             return; // El evento ServerStartingEvent no se ha activado, saliendo del método
         }
 
 
-        BlockPos posicion = new BlockPos(movement.getEntity().xOld, movement.getEntity().yOld, movement.getEntity().zOld);
+        BlockPos posicion1 = new BlockPos(movement.getEntity().xOld, movement.getEntity().yOld, movement.getEntity().zOld);
+        BlockPos posicion2 = new BlockPos(movement.getEntity().xOld, movement.getEntity().yOld-1, movement.getEntity().zOld);
         //System.out.println(posicion.toString());
-        this.posicionJugador = posicion;
-    }
-    @SubscribeEvent
-    public void PosicionBloqueDebajo( MovementInputUpdateEvent movement) {
+        if(movement.getEntity() instanceof Player){
+            if(movement.getInput().down){
+                this.posicionJugador = posicion1;
+                this.posicionBloqueDebajo = posicion2;
+                this.teletransportado = false;
 
-        if (!serverStarting) {
-            return; // El evento ServerStartingEvent no se ha activado, saliendo del método
+            }
+            if(movement.getInput().up){
+                this.posicionJugador = posicion1;
+                this.posicionBloqueDebajo = posicion2;
+                this.teletransportado = false;
+            }
+            if(movement.getInput().right){
+                this.posicionJugador = posicion1;
+                this.posicionBloqueDebajo = posicion2;
+                this.teletransportado = false;
+            }
+            if(movement.getInput().left){
+                this.posicionJugador = posicion1;
+                this.posicionBloqueDebajo = posicion2;
+                this.teletransportado = false;
+            }
         }
 
-        BlockPos posicion = new BlockPos(movement.getEntity().xOld, movement.getEntity().yOld-1, movement.getEntity().zOld);
-        //System.out.println(posicion.toString());
-
-        this.posicionBloqueDebajo = posicion;
     }
+
 
 
 
@@ -184,6 +215,10 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         if (!serverStarting) {
             return; // El evento ServerStartingEvent no se ha activado, saliendo del método
         }
+        //Instancio las variables de el jugador y el mundo
+        if(movement.getEntity() instanceof Player){
+        jugador = movement.getEntity();
+        mundo = jugador.getCommandSenderWorld();}
 
         ItemStack botas = Minecraft.getInstance().player.getItemBySlot(EquipmentSlot.FEET);
 
@@ -210,6 +245,8 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
             botasNetherita();
 
 
+        }else if(botas.getItem().equals( Items.CHAINMAIL_BOOTS)){
+            botasCotaDeMalla();
         }else{
             //System.out.println("NO LLEVAS NADA");
         }
@@ -225,16 +262,15 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     public void botasCuero() {
 
         if(cambioDeBloque()){
-            if (Math.random() < 1) {
+
+            if (estaTocandoSuelo()) {
+            if (Math.random() < 0.5) {
                 //comprueba si hay bloque debajo
-                BlockState bloqueDebajo = Minecraft.getInstance().level.getBlockState(posicionBloqueDebajo);
-                if (bloqueDebajo.getBlock() != Blocks.AIR) {
-                    colocarBloqueServer(1696, posicioAnteriorJugador);
-                    System.out.println("Fuego Invocado");
-                } else {
-                    System.out.println("Nada");
-                }
-            }
+                colocarBloqueServer(Blocks.FIRE, posicioAnteriorJugador);
+                System.out.println("Fuego Invocado");
+            }else{ colocarBloqueServer(Blocks.SOUL_FIRE, posicioAnteriorJugador);//he variado porque me gusta mas así
+                System.out.println("Nada");}
+                } else {}
         }
     }
 
@@ -258,10 +294,10 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
         private void botasOro() {
             if(cambioDeBloque()){
-                BlockState bloqueDebajo = Minecraft.getInstance().level.getBlockState(posicionBloqueDebajo);
-                if(bloqueDebajo.getBlock()!= Blocks.AIR){
+
+                if(estaTocandoSuelo()){
                     //System.out.println("Estas pisando suelo");
-                    colocarBloqueServer(1681,posicionBloqueDebajo);
+                    colocarBloqueServer(Blocks.GOLD_BLOCK,posicionBloqueDebajo);
                 }else{
                     //System.out.println("Estas Flotando");
                 }
@@ -274,7 +310,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
             int idFlor = (int) (Math.random() * 15) + 1666;
             Level level = Minecraft.getInstance().level;
             BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL),Minecraft.getInstance().player.getCommandSenderWorld(), posicionBloqueDebajo,Minecraft.getInstance().player);
-            colocarBloqueServer(idFlor,posicionJugador);
+            colocarBloqueServerPorID(idFlor,posicionJugador);
         }
     }
 
@@ -289,6 +325,30 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
          Minecraft.getInstance().player.setNoGravity(false);
      }
     }
+
+    public void botasCotaDeMalla() {
+        MobEffectInstance slowFallingEffect = new MobEffectInstance(new MobEffects().SLOW_FALLING);
+        if (!teletransportado && jugador.getDeltaMovement().y < -2.0) {
+            //teletransportar();
+            System.out.println("TE HAS TELETRANSPORTADO");
+            Minecraft.getInstance().player.setNoGravity(true);
+            jugador.addEffect(slowFallingEffect);
+        }else{
+
+        }
+
+       // Minecraft.getInstance().player.get;
+
+
+
+
+    }
+
+
+
+
+
+
 
 
 
@@ -309,13 +369,13 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
   public boolean cambioDeBloque(){
         if(((int)posicionJugador.getX())!=((int)PosXAnteriorJugador)&&PosXAnteriorJugador!=Double.MAX_VALUE){
-            System.out.println("Has cambiado de bloque X");
+            //System.out.println("Has cambiado de bloque X");
             this.PosXAnteriorJugador = posicionJugador.getX();
             this.PosZAnteriorJugador = posicionJugador.getZ();
 
             return true;
         } else if (((int)posicionJugador.getZ())!=((int)PosZAnteriorJugador)&&PosZAnteriorJugador!=Double.MAX_VALUE){
-            System.out.println("Has cambiado de bloque Z");
+          //  System.out.println("Has cambiado de bloque Z");
             this.PosXAnteriorJugador = posicionJugador.getX();
             this.PosZAnteriorJugador = posicionJugador.getZ();
 
@@ -324,13 +384,21 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
             this.PosXAnteriorJugador = posicionJugador.getX();
             this.PosZAnteriorJugador = posicionJugador.getZ();
             posicioAnteriorJugador = new BlockPos(PosXAnteriorJugador,posicionJugador.getY(),PosZAnteriorJugador);
-            System.out.println(posicioAnteriorJugador.toString());
+           // System.out.println(posicioAnteriorJugador.toString());
 
         }
 
         return false;
     }
 
+        public boolean estaTocandoSuelo(){
+            BlockState bloqueDebajo = Minecraft.getInstance().level.getBlockState(posicionBloqueDebajo);
+            return bloqueDebajo.getBlock() != Blocks.AIR;
+        }
+    public boolean estaEnAire(){
+        BlockState bloqueDebajo = Minecraft.getInstance().level.getBlockState(posicionJugador);
+        return bloqueDebajo.getBlock().equals(Blocks.AIR) ;
+    }
 /*
 
     public String direccionPosicionAnteriorJugador() {
@@ -390,10 +458,17 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     }*/
 
 
-    public void colocarBloqueServer(int blockId,BlockPos coordenadas ) {
+    public void colocarBloqueServer(Block blockNombre,BlockPos coordenadas ) {
         // System.out.println("Se ejecuto:colocarBloque");
-        Minecraft.getInstance().level.setBlock(coordenadas, Block.stateById(blockId), 512);
+       // Minecraft.getInstance().level.setBlock(coordenadas, Block.stateById(blockId), 512);
+        BlockState bloque = blockNombre.defaultBlockState();
+      mundo.setBlockAndUpdate(coordenadas,bloque);
         //movement.getEntity().getLevel().setBlock(coordenadas, Block.stateById(blockId), 512);
+    }
+
+    public void colocarBloqueServerPorID(int blockId,BlockPos coordenadas ) {
+         Minecraft.getInstance().level.setBlock(coordenadas, Block.stateById(blockId), 512);
+
     }
 
 
