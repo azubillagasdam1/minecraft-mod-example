@@ -67,9 +67,10 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     double PosZAnteriorJugador = Double.MAX_VALUE;
     double PosXAnteriorBloque = Double.MAX_VALUE;
     double PosZAnteriorBloque = Double.MAX_VALUE;
+    int slowFallingDuration = 1000;
 
-    private Boolean teletransportado = false;
-    private   int contador = 1650;
+    MobEffectInstance slowFallingEffect = new MobEffectInstance(MobEffects.SLOW_FALLING, slowFallingDuration, 500);
+
 
     public ExampleMod(){
         super();
@@ -183,23 +184,23 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
             if(movement.getInput().down){
                 this.posicionJugador = posicion1;
                 this.posicionBloqueDebajo = posicion2;
-                this.teletransportado = false;
+
 
             }
             if(movement.getInput().up){
                 this.posicionJugador = posicion1;
                 this.posicionBloqueDebajo = posicion2;
-                this.teletransportado = false;
+
             }
             if(movement.getInput().right){
                 this.posicionJugador = posicion1;
                 this.posicionBloqueDebajo = posicion2;
-                this.teletransportado = false;
+
             }
             if(movement.getInput().left){
                 this.posicionJugador = posicion1;
                 this.posicionBloqueDebajo = posicion2;
-                this.teletransportado = false;
+
             }
         }
 
@@ -216,9 +217,9 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
             return; // El evento ServerStartingEvent no se ha activado, saliendo del método
         }
         //Instancio las variables de el jugador y el mundo
-        if(movement.getEntity() instanceof Player){
+
         jugador = movement.getEntity();
-        mundo = jugador.getCommandSenderWorld();}
+        mundo = jugador.getCommandSenderWorld();
 
         ItemStack botas = Minecraft.getInstance().player.getItemBySlot(EquipmentSlot.FEET);
 
@@ -327,22 +328,31 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     }
 
     public void botasCotaDeMalla() {
-        MobEffectInstance slowFallingEffect = new MobEffectInstance(new MobEffects().SLOW_FALLING);
-        if (!teletransportado && jugador.getDeltaMovement().y < -2.0) {
-            //teletransportar();
-            System.out.println("TE HAS TELETRANSPORTADO");
-            Minecraft.getInstance().player.setNoGravity(true);
-            jugador.addEffect(slowFallingEffect);
-        }else{
 
-        }
+
+        if (jugador.getDeltaMovement().y < -1.5) {
+            jugador.setDeltaMovement(jugador.getDeltaMovement().x,0,jugador.getDeltaMovement().z);
+            jugador.addEffect(slowFallingEffect);
+        // Disminuye el temporizador en cada actualización de la entidad del jugador
+        if (slowFallingDuration > 0) {
+            slowFallingDuration--;}
+            // Cuando el temporizador llega a 0, quita el efecto de la poción
+            if (slowFallingDuration == 0) {
+
+
+                jugador.removeAllEffects();
+                jugador.removeEffectNoUpdate(slowFallingEffect.getEffect());
+                System.out.println("REMOVE EFFECT");
+            }
+
+    }}
 
        // Minecraft.getInstance().player.get;
 
 
 
 
-    }
+
 
 
 
