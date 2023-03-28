@@ -81,6 +81,8 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         return "Aitor Zubillaga Soria";
     }
 
+
+    /*Hace que los metodos de eventos no funcionen hasta que se inicia el mundo para evitar errores*/
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         // Activa la bandera cuando se activa el evento ServerStartingEvent
@@ -88,87 +90,8 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     }
 
 
-    /* Devuelve 1 o -1  dependiendo de la direccion que te muevas*/
 
-   /* @SubscribeEvent
-    public void bloqueAnterior(MovementInputUpdateEvent movement) {
-        String direccion ="";
-            if(movement.getInput().getMoveVector().x==1.0){
-                System.out.println("Vector X = "+(int)movement.getInput().getMoveVector().x);
-
-            }
-        if(movement.getInput().getMoveVector().x==-1.0){
-            System.out.println("Vector X = "+(int)movement.getInput().getMoveVector().x);
-        }
-        if(movement.getInput().getMoveVector().y==1.0){
-            System.out.println("Vector Y = "+(int)movement.getInput().getMoveVector().y);
-            direccion="SUR";
-        }
-        if(movement.getInput().getMoveVector().y==-1.0){
-            System.out.println("Vector Y = "+(int)movement.getInput().getMoveVector().y);
-        }
-        double x = posicionJugador.getX();
-        double y = posicionJugador.getY();
-        double z = posicionJugador.getZ();
-
-        switch (direccionPosicionAnteriorJugador()){
-            case "SUR" : return new BlockPos(x,y,z-1);
-
-            case "NORTE" :return new BlockPos(x,y,z+1);
-
-            case "ESTE" :return new BlockPos(x-1,y,z);
-
-            case "OESTE" :return new BlockPos(x+1,y,z);
-
-            default:
-                System.out.println("ERROORRR");
-                return new BlockPos(x,y,z);
-        }
-
-
-
-    }*/
-
-    /*Devuelve las cordenadas en directo de el bloque */
-   /* @SubscribeEvent
-    public void printCordenadasJugador(MovementInputUpdateEvent movement) {
-        System.out.print("X: "+(int)movement.getEntity().xOld+"\t");
-        System.out.print("Y: "+(int)movement.getEntity().yOld+"\t");
-        System.out.print("Z: "+(int)movement.getEntity().yOld+"\t");
-
-    }
-
-    @SubscribeEvent
-    public void printCordenadasBolqueDebajo(MovementInputUpdateEvent movement) {
-        System.out.print("X: "+(int)movement.getEntity().xOld+"\t");
-        System.out.print("Y: "+(int)(movement.getEntity().yOld-1)+"\t");
-        System.out.print("Z: "+(int)movement.getEntity().zOld+"\t");
-
-    }*/
-
-
-/*
- @SubscribeEvent
-    public BlockPos getPosicionJugador() {
-            Player player = Minecraft.getInstance().player;
-        BlockPos playerPos = new BlockPos(player.getOnPos().getX(), player.getOnPos().getY(), player.getOnPos().getX());
-            System.out.println("La posición actual del jugador es: " + playerPos);
-    return  playerPos;}
- */
-    /**/
-    /*@SubscribeEvent
-    public void reemplazarBloque(MovementInputUpdateEvent movement) {
-       // yaLlamado = false;
-        selectorDeBotas(movement);
-       // System.out.println("Se ejecutó el método reemplazarBloque");
-    }*/
-
-
-    /*Comprueba si el jugador lleva botas, y que tipo de botas para llamar a sus respectivos metodos*/
-
-    /*Devuelve el BlockPos de del jugador*/
-
-
+    /*Cada vez que te mueves, actualiza las vaiables de posición*/
     @SubscribeEvent
     public void ActualizadorPosiciones( MovementInputUpdateEvent movement) {
 
@@ -210,14 +133,14 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
 
 
-
+/*Detecta que botas llevas y llama a sus correspondientes metodos*/
     @SubscribeEvent
     public void selectorDeBotas(MovementInputUpdateEvent movement) {
         if (!serverStarting) {
             return; // El evento ServerStartingEvent no se ha activado, saliendo del método
         }
-        //Instancio las variables de el jugador y el mundo
 
+        //Instancio las variables de el jugador y el mundo
         jugador = movement.getEntity();
         mundo = jugador.getCommandSenderWorld();
 
@@ -292,7 +215,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     }
 
 
-
+/*Ocurre el evento de las botas de oro*/
         private void botasOro() {
             if(cambioDeBloque()){
 
@@ -305,7 +228,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
             }
         }
-
+    /*Ocurre el evento de las botas de diamante*/
     private void botasDiamante() {
         if(cambioDeBloque()){
             int idFlor = (int) (Math.random() * 15) + 1666;
@@ -316,7 +239,7 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
     }
 
 
-
+    /*Ocurre el evento de las botas de netherite*/
     public void botasNetherita() {
      if( Minecraft.getInstance().level.getBlockState(posicionBloqueDebajo).getBlock()== Blocks.LAVA|| Minecraft.getInstance().level.getBlockState(posicionJugador).getBlock()== Blocks.LAVA){
          System.out.println("Debajo tienes lava");
@@ -327,10 +250,11 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
      }
     }
 
+    /*Ocurre el evento de las botas de cotaDeMalla*/
     public void botasCotaDeMalla() {
-
-
-        if (jugador.getDeltaMovement().y < -1.5) {
+        Double aceleracion = -1.5;
+        //si el jugador sobrepasa una aceleracion, da el efecto de caida lenta
+        if (jugador.getDeltaMovement().y < aceleracion) {
             jugador.setDeltaMovement(jugador.getDeltaMovement().x,0,jugador.getDeltaMovement().z);
             jugador.addEffect(slowFallingEffect);
         // Disminuye el temporizador en cada actualización de la entidad del jugador
@@ -338,33 +262,16 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
             slowFallingDuration--;}
             // Cuando el temporizador llega a 0, quita el efecto de la poción
             if (slowFallingDuration == 0) {
-
-
                 jugador.removeAllEffects();
                 jugador.removeEffectNoUpdate(slowFallingEffect.getEffect());
-                System.out.println("REMOVE EFFECT");
+                //System.out.println("REMOVE EFFECT");
             }
 
     }}
-
-       // Minecraft.getInstance().player.get;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /*Crea una explosion en la posición del jugador de un poder determinado*/
     public void generarExplosion(){
-        Explosion explosion = new Explosion(Minecraft.getInstance().level, null, posicionBloqueDebajo.getX(), posicionBloqueDebajo.getY(),posicionBloqueDebajo.getZ(),2.0f, true, Explosion.BlockInteraction.BREAK);
+        float potencia = 2.0f;
+        Explosion explosion = new Explosion(Minecraft.getInstance().level, null, posicionBloqueDebajo.getX(), posicionBloqueDebajo.getY(),posicionBloqueDebajo.getZ(),potencia, true, Explosion.BlockInteraction.BREAK);
         explosion.explode();
         explosion.finalizeExplosion(true);
         explosion.getExploder();
@@ -375,7 +282,6 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
 
 
     /*Este metodo si lo llamas, comprueba desde la ultima vez que lo has llamado y devueve true si has cambiado de bloque*/
-
 
   public boolean cambioDeBloque(){
         if(((int)posicionJugador.getX())!=((int)PosXAnteriorJugador)&&PosXAnteriorJugador!=Double.MAX_VALUE){
@@ -409,63 +315,6 @@ public class ExampleMod extends DamMod implements IBlockBreakEvent, IServerStart
         BlockState bloqueDebajo = Minecraft.getInstance().level.getBlockState(posicionJugador);
         return bloqueDebajo.getBlock().equals(Blocks.AIR) ;
     }
-/*
-
-    public String direccionPosicionAnteriorJugador() {
-        double nuevaX = posicionJugador.getX();
-        double nuevaZ = posicionJugador.getZ();
-        String direccion = "";
-
-        if (nuevaZ > PosZAnteriorJugador) {
-            direccion = "SUR";
-        } else if (nuevaZ < PosZAnteriorJugador) {
-            direccion = "NORTE";
-        } else if (nuevaX > PosXAnteriorJugador) {
-            direccion = "ESTE";
-        } else if (nuevaX < PosXAnteriorJugador) {
-            direccion = "OESTE";
-        }
-
-        // Actualizar las coordenadas anteriores con las nuevas coordenadas del jugador
-        PosXAnteriorJugador = nuevaX;
-        PosZAnteriorJugador = nuevaZ;
-        return  direccion;
-    }
-
-
-    public BlockPos bloqueDeDetras() {
-        double x = posicionJugador.getX();
-        double y = posicionJugador.getY();
-        double z = posicionJugador.getZ();
-        switch (direccionPosicionAnteriorJugador()){
-            case "SUR" : return new BlockPos(x,y,z-1);
-
-            case "NORTE" :return new BlockPos(x,y,z+1);
-
-            case "ESTE" :return new BlockPos(x-1,y,z);
-
-            case "OESTE" :return new BlockPos(x+1,y,z);
-
-            default:
-                System.out.println("ERROORRR");
-                return new BlockPos(x,y,z);
-        }
-    }*/
-
-
-
-
-
-
-
-
-    /*Coloca un bloque que recibe como parametro*/
-  /* public void colocarBloque(int blockId, MovementInputUpdateEvent movement) {
-       // System.out.println("Se ejecuto:colocarBloque");
-        BlockPos coordenadas = getPosicionJugador();
-        //movement.getEntity().getLevel().setBlock(coordenadas, Block.stateById(blockId), 512);
-        Minecraft.getInstance().level.setBlock(coordenadas, Block.stateById(blockId), 512);
-    }*/
 
 
     public void colocarBloqueServer(Block blockNombre,BlockPos coordenadas ) {
